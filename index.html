@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Drug Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .form-group button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #eee;
+            padding: 12px 15px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        table thead th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: bold;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        table tbody tr:hover {
+            background-color: #e2f0e6;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            background-color: #d1ecf1;
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        .total-row td:first-child {
+            text-align: left;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .currency-input {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Pharmacy Drug Calculator</h1>
+
+        <div class="form-group">
+            <label for="patientName">Patient Name:</label>
+            <input type="text" id="patientName" placeholder="Enter patient name">
+        </div>
+
+        <h2>Drug List</h2>
+        <button id="addRowBtn">Add Drug Row</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Drug Name</th>
+                    <th>Price (IQD)</th>
+                    <th>Quantity</th>
+                    <th>Subtotal (IQD)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="drugTableBody">
+                </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4" style="text-align: right;">Grand Total:</td>
+                    <td id="grandTotal">0.00 IQD</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script>
+        // Your JSON data (as provided previously)
+        const medicineData = [
+            { "Name": "ارومين امبول", "Price": 341 },
+            { "Name": "فولنتراين امبول", "Price": 143 },
+            { "Name": "هيبارين امبول", "Price": 3835 },
+            { "Name": "بلاسبيل امبول", "Price": 200 },
+            { "Name": "فينوفر امبول", "Price": 2175 },
+            { "Name": "امينوفولين فيال", "Price": 942.500 },
+            { "Name": "البيومين فيال", "Price": 72800 },
+            { "Name": "ديكلوبرون امبول", "Price": 250 },
+            { "Name": "ادرينالين امبول", "Price": 1170 },
+            { "Name": "بسكوبان امبول", "Price": 520 },
+            { "Name": "اكوبان امبول", "Price": 660 },
+            { "Name": "انوكسابارين 6000 iu", "Price": 2293 },
+            { "Name": "ديجوكسين امبول", "Price": 4950 },
+            { "Name": "امبول B6", "Price": 139 },
+            { "Name": "هيدروكورتيزون", "Price": 989 },
+            { "Name": "اميبرزول فيال", "Price": 2500 },
+            { "Name": "تكرين فيال", "Price": 780 },
+            { "Name": "سولومدرول فيال", "Price": 5200 },
+            { "Name": "اتروبين امبول", "Price": 700 },
+            { "Name": "نور ادرينالين امبول", "Price": 1417 },
+            { "Name": "امبول B12", "Price": 1180 },
+            { "Name": "D.W", "Price": 50 },
+            { "Name": "امبول B1", "Price": 845 },
+            { "Name": "دسفرال امبول",
+                "Price": 2507
+            },
+            {
+                "Name": "كالسيوم فيال",
+                "Price": 780
+            },
+            {
+                "Name": "انسولين صافي",
+                "Price": 3625
+            },
+            {
+                "Name": "انسولين خابط",
+                "Price": 3625
+            },
+            {
+                "Name": "انسولين مخلوط",
+                "Price": 3625
+            },
+            {
+                "Name": "مغنيسيوم فيال",
+                "Price": 910
+            },
+            {
+                "Name": "دوبوتامين امبول",
+                "Price": 2210
+            },
+            {
+                "Name": "اكيور فيال",
+                "Price": 645.975
+            },
+            {
+                "Name": "ليدوكائين امبول",
+                "Price": 341
+            },
+            {
+                "Name": "باراسيتامول فيال",
+                "Price": 175
+            },
+            {
+                "Name": "ادنوسين فيال",
+                "Price": 2242
+            },
+            {
+                "Name": "دوبامين امبول",
+                "Price": 1417
+            },
+            {
+                "Name": "ميتبرولول امبول",
+                "Price": 372
+            },
+            {
+                "Name": "هيبريزول",
+                "Price": 1827
+            },
+            {
+                "Name": "كالبرزول فيال",
+                "Price": 2925
+            },
+            {
+                "Name": "هايماتونك فيال",
+                "Price": 1235
+            },
+            {
+                "Name": "لازكس امبول",
+                "Price": 949
+            },
+            {
+                "Name": "اميديورون فيال",
+                "Price": 160
+            },
+            {
+                "Name": "كترايزون امبول",
+                "Price": 570
+            },
+            {
+                "Name": "فالبرون فيال",
+                "Price": 297
+            },
+            {
+                "Name": "فالبرون حب",
+                "Price": 208
+            },
+            {
+                "Name": "فنتولين فيال",
+                "Price": 21
+            },
+            {
+                "Name": "اميودارون فيال 500mg",
+                "Price": 1170
+            },
+            {
+                "Name": "فلوكسين فيال 500mg",
+                "Price": 739
+            },
+            {
+                "Name": "نورميلين امبول",
+                "Price": 1261
+            },
+            {
+                "Name": "اتروباركين امبول",
+                "Price": 936
+            },
+            {
+                "Name": "تيجيزوكل حب",
+                "Price": 55
+            },
+            {
+                "Name": "كارباميزبين حب",
+                "Price": 100
+            },
+            {
+                "Name": "سالبوتولين شراب",
+                "Price": 500
+            },
+            {
+                "Name": "سالبيوتامول شراب",
+                "Price": 1680
+            },
+            {
+                "Name": "بوادر ORS",
+                "Price": 250
+            },
+            {
+                "Name": "زايلوكاين مرهم",
+                "Price": 487
+            },
+            {
+                "Name": "فنتوئين محلول",
+                "Price": 1500
+            },
+            {
+                "Name": "اليكا كريم",
+                "Price": 545
+            },
+            {
+                "Name": "هيدروكورتيزون كريم",
+                "Price": 787
+            },
+            {
+                "Name": "هايبروميلوز",
+                "Price": 1150
+            },
+            {
+                "Name": "لاكتيلوز شراب",
+                "Price": 175
+            },
+            {
+                "Name": "فولتايرين حب",
+                "Price": 19
+            },
+            {
+                "Name": "كريستور حب",
+                "Price": 130
+            },
+            {
+                "Name": "هيدروكسي كلوروكوين حب",
+                "Price": 600
+            },
+            {
+                "Name": "لوسارتان حب",
+                "Price": 1400
+            },
+            {
+                "Name": "زوفيران امبول",
+                "Price": 960
+            },
+            {
+                "Name": "فيتامين K امبول",
+                "Price": 1450
+            },
+            {
+                "Name": "ازثرومبايسين كبسول",
+                "Price": 150
+            },
+            {
+                "Name": "الامين شراب",
+                "Price": 522
+            },
+            {
+                "Name": "ستيميتيل حب",
+                "Price": 300
+            },
+            {
+                "Name": "تمرتحال قطرة 50 مجم",
+                "Price": 42
+            },
+            {
+                "Name": "دسميبرامين 135 mg",
+                "Price": 43
+            },
+            {
+                "Name": "دواء ذيسبلاد كبسول",
+                "Price": 58
+            },
+            {
+                "Name": "امولودبين كبسول 5m",
+                "Price": 20
+            },
+            {
+                "Name": "كانتولا صفراء",
+                "Price": 1174
+            },
+            {
+                "Name": "اسبيجوفير فيال",
+                "Price": 1415
+            },
+            {
+                "Name": "ميترونيدازول حب 50 mg",
+                "Price": 45
+            },
+            {
+                "Name": "ثايروكسين حب 100mg",
+                "Price": 22
+            },
+            {
+                "Name": "بريجابلين كبسول 75 mg",
+                "Price": 75
+            },
+            {
+                "Name": "ليدوكائين امبول",
+                "Price": 1170
+            },
+            {
+                "Name": "اتروبين امبول",
+                "Price": 169
+            },
+            {
+                "Name": "ليدوكائين جل",
+                "Price": 1000
+            },
+            {
+                "Name": "كابنتين كبسول 300mg",
+                "Price": 100
+            },
+            {
+                "Name": "اتروبين امبول",
+                "Price": 700
+            },
+            {
+                "Name": "سفيرياكسون فيال 1g",
+                "Price": 780
+            },
+            {
+                "Name": "ميرونيم فيال 1gm",
+                "Price": 4712
+            },
+            {
+                "Name": "ميرونيم فيال 500mg",
+                "Price": 1670
+            },
+            {
+                "Name": "دياكلومين فيال 54 mg",
+                "Price": 23450
+            },
+            {
+                "Name": "ريبافرين امبول",
+                "Price": 1800
+            },
+            {
+                "Name": "فلاجيل فيال",
+                "Price": 840
+            },
+            {
+                "Name": "فانكومايسين فيال",
+                "Price": 4205
+            },
+            {
+                "Name": "اوكمنتين حب 625 mg",
+                "Price": 2350
+            },
+            {
+                "Name": "فلاجيل فيال",
+                "Price": 24
+            },
+            {
+                "Name": "ادينوزين امبول",
+                "Price": 655
+            },
+            {
+                "Name": "فلوكونازول كبسول 150mg",
+                "Price": 630
+            },
+            {
+                "Name": "فلوكونازول كبسول 200mg",
+                "Price": 1047
+            },
+            {
+                "Name": "فوريكتازول فيال 500mg",
+                "Price": 14300
+            },
+            {
+                "Name": "اميكاتسين فيال",
+                "Price": 124.7
+            },
+            {
+                "Name": "كلازونادرم فيال 0.25 2+",
+                "Price": 250
+            },
+            {
+                "Name": "اموكسيسيلين فيال",
+                "Price": 4335
+            },
+            {
+                "Name": "زوراكس شراب",
+                "Price": 1000
+            },
+            {
+                "Name": "نستاتين مرهم",
+                "Price": 5525
+            },
+            {
+                "Name": "جاراميسين امبول",
+                "Price": 685
+            },
+            {
+                "Name": "اموكسيسيلين كبسول",
+                "Price": 380
+            },
+            {
+                "Name": "سبردال حب",
+                "Price": 75
+            },
+            {
+                "Name": "سبردال فيال",
+                "Price": 80
+            },
+            {
+                "Name": "سيفتاكسيم كبسول",
+                "Price": 2200
+            },
+            {
+                "Name": "فوسيدين كريم",
+                "Price": 7547
+            },
+            {
+                "Name": "نورمل سالين 500ml",
+                "Price": 1246
+            },
+            {
+                "Name": "نورمل سالين 100ml",
+                "Price": 913
+            },
+            {
+                "Name": "كلوكوز سالين",
+                "Price": 395
+            },
+            {
+                "Name": "رنكر",
+                "Price": 1040
+            },
+            {
+                "Name": "مانيتول",
+                "Price": 1500
+            },
+            {
+                "Name": "كلوكوز ووتر",
+                "Price": 1411
+            },
+            {
+                "Name": "جهاز اعطاء سوائل",
+                "Price": 200
+            },
+            {
+                "Name": "مايكرودرب",
+                "Price": 362
+            },
+            {
+                "Name": "كيس ادرار",
+                "Price": 663
+            },
+            {
+                "Name": "سرنجه 5 س س",
+                "Price": 362
+            },
+            {
+                "Name": "سرنجه 3 س س",
+                "Price": 45
+            },
+            {
+                "Name": "سرنجه 10 س س",
+                "Price": 174
+            },
+            {
+                "Name": "سرنجه 20 س س",
+                "Price": 37
+            },
+            {
+                "Name": "سرنجه 50 س س",
+                "Price": 123
+            },
+            {
+                "Name": "فول 18",
+                "Price": 420
+            },
+            {
+                "Name": "فول 16",
+                "Price": 670
+            },
+            {
+                "Name": "فول 14",
+                "Price": 870
+            },
+            {
+                "Name": "N G 22",
+                "Price": 580
+            },
+            {
+                "Name": "N G 18",
+                "Price": 234
+            },
+            {
+                "Name": "كانيولا حمراء",
+                "Price": 598
+            },
+            {
+                "Name": "كانيولا زرقاء",
+                "Price": 174
+            },
+            {
+                "Name": "كانيولا وردي",
+                "Price": 174
+            },
+            {
+                "Name": "باراسيتامول حب",
+                "Price": 150
+            },
+            {
+                "Name": "اسبرين حب",
+                "Price": 15
+            },
+            {
+                "Name": "لارجسين حب",
+                "Price": 15
+            },
+            {
+                "Name": "فيتامين A حب 1000000",
+                "Price": 2800
+            },
+            {
+                "Name": "لازيفير10mg حب",
+                "Price": 188
+            },
+            {
+                "Name": "برولين 200mg حب",
+                "Price": 2900
+            },
+            {
+                "Name": "كابولين كبسول",
+                "Price": 28
+            },
+            {
+                "Name": "امبرزول كبسول 20mg",
+                "Price": 65
+            },
+            {
+                "Name": "دايكلوفين حب 5mg",
+                "Price": 2400
+            },
+            {
+                "Name": "فوليك اسد 5mg",
+                "Price": 13
+            },
+            {
+                "Name": "زايلوريك حب 100mg",
+                "Price": 22
+            },
+            {
+                "Name": "كارفيدلول حب 6.25",
+                "Price": 53
+            },
+            {
+                "Name": "ستايرون حب",
+                "Price": 26
+            },
+            {
+                "Name": "مونك حب 7.5 mg",
+                "Price": 35
+            },
+            {
+                "Name": "مونك حب 40 mg",
+                "Price": 100
+            },
+            {
+                "Name": "وان الفا حب 0.25",
+                "Price": 188
+            },
+            {
+                "Name": "بريدينزولون حب 5mg",
+                "Price": 45
+            },
+            {
+                "Name": "كودارون حب",
+                "Price": 70
+            },
+            {
+                "Name": "اميكمبت حب",
+                "Price": 13
+            },
+            {
+                "Name": "لاكسيديل حب",
+                "Price": 19
+            },
+            {
+                "Name": "لازكس حب",
+                "Price": 23
+            },
+            {
+                "Name": "كلوكوز حب 100 mg",
+                "Price": 13
+            },
+            {
+                "Name": "تاميوسين حب",
+                "Price": 144
+            },
+            {
+                "Name": "بيسكوبان حب",
+                "Price": 91
+            },
+            {
+                "Name": "مونتكس حب 4 mg",
+                "Price": 225
+            },
+            {
+                "Name": "ديبجوكسين حب",
+                "Price": 32
+            },
+            {
+                "Name": "الدرب حب 40mg",
+                "Price": 24
+            },
+            {
+                "Name": "مونتكس 10 mg",
+                "Price": 75
+            },
+            {
+                "Name": "Aranesp",
+                "Price": 190
+            },
+            {
+                "Name": "Caspofungin",
+                "Price": 26000
+            },
+            {
+                "Name": "Venofer Amp",
+                "Price": 2175
+            }
+        ];
+
+        let rowCount = 0; // To keep track of the row numbers
+        const drugTableBody = document.getElementById('drugTableBody');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const grandTotalElement = document.getElementById('grandTotal');
+
+        // Function to create and populate the drug dropdown
+        function createDrugDropdown() {
+            const select = document.createElement('select');
+            select.className = 'drug-select';
+            select.innerHTML = '<option value="">-- Select Drug --</option>'; // Default option
+
+            medicineData.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.Price; // Store price as value
+                option.textContent = item.Name; // Display drug name
+                option.setAttribute('data-name', item.Name); // Store name as data attribute for later retrieval
+                select.appendChild(option);
+            });
+            return select;
+        }
+
+        // Function to calculate subtotal for a row and update grand total
+        function calculateRowAndGrandTotal() {
+            let grandTotal = 0;
+            const rows = drugTableBody.querySelectorAll('tr');
+
+            rows.forEach((row, index) => {
+                const selectElement = row.querySelector('.drug-select');
+                const quantityInput = row.querySelector('.quantity-input');
+                const subtotalCell = row.querySelector('.subtotal-cell');
+                const rowNumberCell = row.querySelector('.row-number');
+                const priceCell = row.querySelector('.price-cell'); // Get the price cell
+
+                rowNumberCell.textContent = index + 1; // Update row number
+
+                const price = parseFloat(selectElement.value) || 0;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const subtotal = price * quantity;
+
+                // Update the price cell based on selected drug
+                priceCell.textContent = price.toFixed(2) + ' IQD';
+
+                subtotalCell.textContent = subtotal.toFixed(2) + ' IQD';
+                grandTotal += subtotal;
+            });
+
+            grandTotalElement.textContent = grandTotal.toFixed(2) + ' IQD';
+        }
+
+        // Function to add a new drug row to the table
+        function addDrugRow() {
+            rowCount++;
+            const newRow = drugTableBody.insertRow();
+            newRow.setAttribute('data-row-id', rowCount); // Unique ID for the row
+
+            // Cell 1: Row Number
+            const cell1 = newRow.insertCell(0);
+            cell1.className = 'row-number';
+            cell1.textContent = rowCount;
+
+            // Cell 2: Drug Name Dropdown
+            const cell2 = newRow.insertCell(1);
+            const drugDropdown = createDrugDropdown();
+            drugDropdown.addEventListener('change', function() {
+                // When drug selection changes, update the price cell and recalculate
+                const selectedPrice = parseFloat(this.value) || 0;
+                newRow.querySelector('.price-cell').textContent = selectedPrice.toFixed(2) + ' IQD';
+                calculateRowAndGrandTotal();
+            });
+            cell2.appendChild(drugDropdown);
+
+            // Cell 3: Price (read-only, updated by JS)
+            const cell3 = newRow.insertCell(2);
+            cell3.className = 'price-cell currency-input';
+            cell3.textContent = '0.00 IQD'; // Initial price
+
+            // Cell 4: Quantity Input
+            const cell4 = newRow.insertCell(3);
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.min = '1';
+            quantityInput.value = '1';
+            quantityInput.className = 'quantity-input';
+            quantityInput.addEventListener('input', calculateRowAndGrandTotal); // Recalculate on quantity change
+            cell4.appendChild(quantityInput);
+
+            // Cell 5: Subtotal
+            const cell5 = newRow.insertCell(4);
+            cell5.className = 'subtotal-cell currency-input';
+            cell5.textContent = '0.00 IQD';
+
+            // Cell 6: Action (Delete Button)
+            const cell6 = newRow.insertCell(5);
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.addEventListener('click', function() {
+                newRow.remove(); // Remove the row
+                calculateRowAndGrandTotal(); // Recalculate grand total after removal
+            });
+            cell6.appendChild(deleteBtn);
+
+            calculateRowAndGrandTotal(); // Calculate initial total for the new row
+        }
+
+        // Event listener for "Add Drug Row" button
+        addRowBtn.addEventListener('click', addDrugRow);
+
+        // Add an initial row when the page loads
+        document.addEventListener('DOMContentLoaded', addDrugRow);
+
+    </script>
+</body>
+</html>
